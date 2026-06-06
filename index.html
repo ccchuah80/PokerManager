@@ -12,7 +12,7 @@
 			width: 100%;
 			box-sizing: border-box; /* Ensures padding doesn't add to width */
 			background-color: #003366;
-			background-image: linear-gradient(45deg, #004080 25%, transparent 25%, transparent 75%, #004080 75%, #004080), 
+			background-image: linear-gradient(135deg, #004080 25%, transparent 25%, transparent 75%, #004080 75%, #004080), 
 							  linear-gradient(45deg, #004080 25%, transparent 25%, transparent 75%, #004080 75%, #004080);
 			background-size: 60px 60px;
 			color: white;
@@ -21,8 +21,8 @@
 		.card { 
 			background: rgba(255, 255, 250, 0.95); 
 			color: #333; 
-			border-radius: 12px; 
-			padding: 12px; 
+			border-radius: 10px; 
+			padding: 10px; 
 			margin-bottom: 10px; 
 			width: 100%;
 			box-sizing: border-box; /* Crucial for mobile sizing */
@@ -33,28 +33,34 @@
         .p-name { font-weight: bold; }
         .p-buyin, .p-cashout, .p-net { text-align: center; }
         
-        .hidden { display: none; }
         input { width: 100%; padding: 0.5rem; margin: 0.3rem 0; box-sizing: border-box; }
         button { padding: 0.4rem; font-size: 0.9rem; border: none; border-radius: 10px; cursor: pointer; margin: 2px; }
         .btn-main { background: #007bff; color: white; width: 100%; border-radius: 10px; padding: 0.6rem; }
         
-        #ledgerList { height: 250px; overflow-y: auto; border: 2px solid #ddd; padding: 0.5rem; background: white; font-size: 0.8rem; color: #333; }
-        .ledger-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px solid #eee; }
-        .edit-btn { visibility: hidden; background: #ffc107; border: none; border-radius: 4px; padding: 2px 6px; }
-        .ledger-item:hover .edit-btn { visibility: visible; }
+#ledgerList { height: 250px; overflow-y: auto; border: 2px solid #ddd; padding: 0.5rem; background: white; font-size: 0.8rem; color: #333; }
+.ledger-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px 5px; /* Increased padding for better touch area */
+    border-bottom: 1px solid #eee; 
+    cursor: pointer; /* Makes it look clickable */
+}
+.ledger-item:active { background-color: #f0f0f0; } /* Visual feedback on mobile tap */
+.edit-btn { display: none; } /* We don't need the button element anymore */        .ledger-item:hover .edit-btn { visibility: visible; }
         
         .bold-blue { color: #0056b3; font-weight: bold; }
         .bold-black { color: #000; font-weight: bold; }
         
-		  @media (max-width: 600px) {
+		  @media (max-width: 640px) {
 		/* Force body to take full width and prevent scroll */
-		body { padding: 5px; }
+		body { padding: 3px; }
 	
 		/* Force the player row to use minimal spacing */
 		.player-row { 
 			grid-template-columns: 1.8fr 0.8fr 0.8fr 0.7fr; /* Adjusted for name space */
-			font-size: 0.8rem; 
-			padding: 8px 2px;
+			font-size: 1rem; 
+			padding: 12px 2px;
 		}
 	
 		/* Prevent long names from breaking the layout */
@@ -66,15 +72,15 @@
 	
 		/* Make buttons touch-friendly but compact */
 		button { 
-			padding: 6px 2px; 
-			font-size: 0.75rem; 
+			padding: 8px 4px; 
+			font-size: 0.9rem; 
 		}
 	}
     </style>
 </head>
 <body>
 
-    <div class="card" style="text-align:center; font-weight:bold;">
+    <div class="card" style="text-align:center;font-size: 1.2rem; font-weight:bold;">
         Chips In Play: $<span id="totalInDisplay">0</span>  
         <span id="outWrapper" class="hidden">| Total CashOut: $<span id="totalOutDisplay">0</span></span>
 <div id="status" style="margin-top: 5px; color: #aaa;"></div>
@@ -84,8 +90,8 @@
     <div class="card" id="flowResult" style="display:none; font-size:0.9rem;"></div>
     <button onclick="document.getElementById('addPlayerSection').classList.toggle('hidden')" style="width: 100%; padding: 10px;">Toggle Add Player</button>
     <div id="addPlayerSection" class="card hidden">
-        <input type="text" id="pName" placeholder="Player Name">
-        <input type="number" id="initialBuyIn" value="200">
+        <input type="text" style="font-size: 1rem" id="pName" placeholder="Player Name">
+        <input type="number" style="font-size: 1rem" id="initialBuyIn" value="200">
         <button class="btn-main" onclick="addPlayer()">Add Player</button>
     </div>
 
@@ -213,12 +219,14 @@ function addPlayer() {
             document.getElementById('status').innerText = (diff === 0 && totalIn > 0) ? "✅ Balanced" : `Remaining: $${diff}`;
             document.getElementById('minFlowBtn').classList.toggle('hidden', diff !== 0 || totalIn === 0);
 
-            const lDiv = document.getElementById('ledgerList');
-            lDiv.innerHTML = ledger.map((item, i) => `
-                <div class="ledger-item">
-                    <span>${item.time} - ${item.name} <span class="${item.type==='buyIn'?'bold-blue':'bold-black'}">${item.type}</span>: $${item.amount}</span>
-                    <button class="edit-btn" onclick="editLedger(${i})">Edit</button>
-                </div>`).join('');
+const lDiv = document.getElementById('ledgerList');
+lDiv.innerHTML = ledger.map((item, i) => `
+    <div class="ledger-item" onclick="editLedger(${i})">
+        <span>${item.time} - ${item.name} 
+            <span class="${item.type==='buyIn'?'bold-blue':'bold-black'}">${item.type}</span>: $${item.amount}
+        </span>
+        <small style="color:#888;">(Tap to edit)</small>
+    </div>`).join('');
         }
 
 function resetAll() { 
