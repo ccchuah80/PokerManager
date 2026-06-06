@@ -35,15 +35,20 @@
         
         input { width: 100%; padding: 0.5rem; margin: 0.3rem 0; box-sizing: border-box; }
         button { 
-		  padding: 0.4rem; 
+		  padding: 1rem; 
 		  font-size: 0.9rem; 
-		  border: 2px solid #9cf; /* Added style and color */
+		  border: 2px solid #ccc; /* Added style and color */
 		  border-radius: 10px; 
 		  cursor: pointer; 
 		  margin: 2px;
-		  background: #cfc;
+		  background: #06c;
+		  font-family: sans-serif;
+		  color: white;
+		  transition: background-color 0.2s ease;
 		}
-        .btn-main { background: #007bff; color: white; width: 100%; border-radius: 10px; padding: 0.6rem; }
+		button:hover   { background-color: #0052a3; }
+        .btn-main { background: #28a745; color: white; width: 100%; border-radius: 10px; padding: 0.6rem; }
+        .btn-main:hover   { background-color: #218838; }
         
 		#ledgerList { height: 250px; overflow-y: auto; border: 2px solid #ddd; padding: 0.5rem; background: white; font-size: 0.8rem; color: #333; }
 		.ledger-item { 
@@ -63,7 +68,7 @@
         
 		@media (max-width: 640px) {
 			/* Force body to take full width and prevent scroll */
-			body { padding: 3px; }
+			body { padding: 8px; }
 		
 			/* Force the player row to use minimal spacing */
 			.player-row { 
