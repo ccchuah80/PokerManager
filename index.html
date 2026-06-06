@@ -113,23 +113,23 @@
         let players = JSON.parse(localStorage.getItem('pokerPlayers')) || {};
         let ledger = JSON.parse(localStorage.getItem('pokerLedger')) || [];
 
-function addPlayer() {
-    const name = document.getElementById('pName').value.trim();
-    const amount = parseFloat(document.getElementById('initialBuyIn').value);
-    
-    if (!name || players[name]) { 
-        alert("Enter a unique name"); 
-        return; 
-    }
-    
-    // 1. Initialize the player object with an empty array
-    players[name] = { buyIns: [], cashOut: -1, hasCashedOut: false };
-    
-    // 2. Use addTransaction to handle the array push, ledger logging, and rendering
-    addTransaction(name, 'buyIn', amount);
-    
-    document.getElementById('pName').value = '';
-}
+		function addPlayer() {
+			const name = document.getElementById('pName').value.trim();
+			const amount = parseFloat(document.getElementById('initialBuyIn').value);
+			
+			if (!name || players[name]) { 
+				alert("Enter a unique name"); 
+				return; 
+			}
+			
+			// 1. Initialize the player object with an empty array
+			players[name] = { buyIns: [], cashOut: -1, hasCashedOut: false };
+			
+			// 2. Use addTransaction to handle the array push, ledger logging, and rendering
+			addTransaction(name, 'buyIn', amount);
+			
+			document.getElementById('pName').value = '';
+		}
 
         function addTransaction(name, type, amount) {
             if (isNaN(amount)) return;
@@ -138,9 +138,9 @@ function addPlayer() {
             if (type === 'cashOut' && gOut > gIn) { alert("Table Error: Out exceeds In!"); return; }
             
             if (type === 'cashOut') {
-    players[name].cashOut = amount;
-    players[name].hasCashedOut = true;
-}            else players[name].buyIns.push(amount);
+				players[name].cashOut = amount;
+				players[name].hasCashedOut = true;
+			}            else players[name].buyIns.push(amount);
 
             ledger.push({ name, type, amount, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
             render();
@@ -184,7 +184,26 @@ function addPlayer() {
             div.innerHTML = res;
             div.style.display = 'block';
         }
-        
+        function promptAndAdd(name, type) {
+			let input;
+			let valid = false;
+		
+			while (!valid) {
+				input = prompt(`Enter ${type} amount for ${name}:`);
+				
+				// If user hits "Cancel", break the loop
+				if (input === null) return; 
+		
+				// Check if input is a valid number and not empty
+				let amount = parseFloat(input);
+				if (!isNaN(amount) && input.trim() !== "") {
+					addTransaction(name, type, amount);
+					valid = true;
+				} else {
+					alert("Invalid input! Please enter numbers only.");
+				}
+			}
+		}
         function render() {
             localStorage.setItem('pokerPlayers', JSON.stringify(players));
             localStorage.setItem('pokerLedger', JSON.stringify(ledger));
@@ -202,8 +221,8 @@ function addPlayer() {
                 container.innerHTML += `
                     <div class="player-row">
                         <div class="p-name">${name}<br>
-                            <button onclick="addTransaction('${name}', 'buyIn', parseFloat(prompt('Top-up:')))">+Re-buy</button>
-                            <button onclick="addTransaction('${name}', 'cashOut', parseFloat(prompt('Cashout:')))">Cash Out</button>
+							<button onclick="promptAndAdd('${name}', 'buyIn')">+Re-buy</button>
+							<button onclick="promptAndAdd('${name}', 'cashOut')">Cash Out</button>
                         </div>
                         <div class="p-buyin">$${totalBuyIn}</div>
                         <div class="p-cashout">${p.hasCashedOut ? '$'+p.cashOut : '-'}</div>
