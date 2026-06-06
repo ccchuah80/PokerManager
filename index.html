@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Poker Settlement Manager by CCC</title>
+    <style>
+        body { 
+            font-family: sans-serif; max-width: 600px; margin: 1rem auto; padding: 1rem; 
+            background-color: #003366;
+            background-image: linear-gradient(45deg, #004080 25%, transparent 25%, transparent 75%, #004080 75%, #004080), 
+                              linear-gradient(45deg, #004080 25%, transparent 25%, transparent 75%, #004080 75%, #004080);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            color: white;
+        }
+        .card { background: rgba(255, 255, 250, 0.95); color: #333; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .hidden { display: none; }
+        .player-row { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr; align-items: center; border-bottom: 1px solid #666; padding: 0.8rem 0; font-size: 0.9rem; }
+        .p-name { font-weight: bold; }
+        .p-buyin, .p-cashout, .p-net { text-align: center; }
+        
+        .hidden { display: none; }
+        input { width: 100%; padding: 0.5rem; margin: 0.3rem 0; box-sizing: border-box; }
+        button { padding: 0.4rem; font-size: 0.9rem; border: none; border-radius: 10px; cursor: pointer; margin: 2px; }
+        .btn-main { background: #007bff; color: white; width: 100%; border-radius: 10px; padding: 0.6rem; }
+        
+        #ledgerList { height: 250px; overflow-y: auto; border: 2px solid #ddd; padding: 0.5rem; background: white; font-size: 0.8rem; color: #333; }
+        .ledger-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px solid #eee; }
+        .edit-btn { visibility: hidden; background: #ffc107; border: none; border-radius: 4px; padding: 2px 6px; }
+        .ledger-item:hover .edit-btn { visibility: visible; }
+        
+        .bold-blue { color: #0056b3; font-weight: bold; }
+        .bold-black { color: #000; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="card" style="text-align:center; font-weight:bold;">
+        Chips In Play: $<span id="totalInDisplay">0</span>  
+        <span id="outWrapper" class="hidden">| Total CashOut: $<span id="totalOutDisplay">0</span></span>
+<div id="status" style="margin-top: 5px; color: #aaa;"></div>
+                <button id="minFlowBtn" class="hidden" onclick="minimizeFlow()" style="background:#28a745; color:white; margin-top:10px; border:none; padding:10px; cursor:pointer;">Settlement Plan</button>
+    </div>
+
+    <div class="card" id="flowResult" style="display:none; font-size:0.9rem;"></div>
+    <button onclick="document.getElementById('addPlayerSection').classList.toggle('hidden')" style="width: 100%; padding: 10px;">Toggle Add Player</button>
+    <div id="addPlayerSection" class="card hidden">
+        <input type="text" id="pName" placeholder="Player Name">
+        <input type="number" id="initialBuyIn" value="200">
+        <button class="btn-main" onclick="addPlayer()">Add Player</button>
+    </div>
+
+
+    <div class="card" style="margin-top: 0.5rem;">
+        <div class="player-row" style="font-weight:bold; border-bottom: 2px solid #333;">
+            <div>NAME</div><div style="text-align:center">💰In</div><div style="text-align:center">💰Out</div><div style="text-align:center">Net</div>
+        </div>
+        <div id="playerList"></div>
+    </div>
+
+
+    <h3>Transaction Ledger</h3>
+    <div id="ledgerList"></div>
+
+    <button style="width: 100%; margin-top: 0.5rem; padding: 10px; font-weight: bold; background: #dc3545; color: white;" onclick="resetAll()">Clear All Data</button>
+
+    <script>
+        let players = JSON.parse(localStorage.getItem('pokerPlayers')) || {};
+        let ledger = JSON.parse(localStorage.getItem('pokerLedger')) || [];
+
+function addPlayer() {
+    const name = document.getElementById('pName').value.trim();
+    const amount = parseFloat(document.getElementById('initialBuyIn').value);
+    
+    if (!name || players[name]) { 
+        alert("Enter a unique name"); 
+        return; 
+    }
+    
+    // 1. Initialize the player object with an empty array
+    players[name] = { buyIns: [], cashOut: -1, hasCashedOut: false };
+    
+    // 2. Use addTransaction to handle the array push, ledger logging, and rendering
+    addTransaction(name, 'buyIn', amount);
+    
+    document.getElementById('pName').value = '';
+}
+
+        function addTransaction(name, type, amount) {
+            if (isNaN(amount)) return;
+            const gIn = Object.values(players).reduce((sum, p) => sum + p.buyIns.reduce((s, a) => s+a, 0), 0) + (type === 'buyIn' ? amount : 0);
+            const gOut = Object.values(players).reduce((sum, p) => sum + p.cashOut, 0) + (type === 'cashOut' ? amount : 0);
+            if (type === 'cashOut' && gOut > gIn) { alert("Table Error: Out exceeds In!"); return; }
+            
+            if (type === 'cashOut') {
+    players[name].cashOut = amount;
+    players[name].hasCashedOut = true;
+}            else players[name].buyIns.push(amount);
+
+            ledger.push({ name, type, amount, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+            render();
+        }
+
+        function editLedger(index) {
+            const entry = ledger[index];
+            const newAmount = parseFloat(prompt(`Update ${entry.name} (${entry.type}):`, entry.amount));
+            if (isNaN(newAmount)) return;
+
+            // Logic to reverse and re-apply
+            if (entry.type === 'buyIn') {
+                const bIndex = players[entry.name].buyIns.indexOf(entry.amount);
+                players[entry.name].buyIns[bIndex] = newAmount;
+            } else {
+                players[entry.name].cashOut = newAmount;
+            }
+            entry.amount = newAmount;
+            render();
+        }
+
+        function minimizeFlow() {
+            let balances = [];
+            for (let name in players) {
+                let net = players[name].cashOut - players[name].buyIns.reduce((a,b)=>a+b, 0);
+                if (net !== 0) balances.push({ name, net });
+            }
+            let debtors = balances.filter(b => b.net < 0).sort((a,b) => a.net - b.net);
+            let creditors = balances.filter(b => b.net > 0).sort((a,b) => b.net - a.net);
+            
+            let res = "<strong>Settlement Plan:</strong><br>";
+            while(debtors.length > 0 && creditors.length > 0) {
+                let d = debtors[0], c = creditors[0];
+                let amt = Math.min(-d.net, c.net);
+                res += `${d.name} pays ${c.name}: $${amt.toFixed(0)}<br>`;
+                d.net += amt; c.net -= amt;
+                if (Math.abs(d.net) < 0.1) debtors.shift();
+                if (Math.abs(c.net) < 0.1) creditors.shift();
+            }
+            let div = document.getElementById('flowResult');
+            div.innerHTML = res;
+            div.style.display = 'block';
+        }
+        
+        function render() {
+            localStorage.setItem('pokerPlayers', JSON.stringify(players));
+            localStorage.setItem('pokerLedger', JSON.stringify(ledger));
+
+            let totalIn = 0, totalOut = 0;
+            const container = document.getElementById('playerList');
+            container.innerHTML = '';
+            
+            for (const name in players) {
+                const p = players[name];
+                const totalBuyIn = p.buyIns.reduce((s, a) => s + a, 0);
+                totalIn += totalBuyIn;
+                if (p.hasCashedOut) totalOut += p.cashOut;
+                let net = p.hasCashedOut ? (p.cashOut - totalBuyIn) : null;                
+                container.innerHTML += `
+                    <div class="player-row">
+                        <div class="p-name">${name}<br>
+                            <button onclick="addTransaction('${name}', 'buyIn', parseFloat(prompt('Top-up:')))">+Re-buy</button>
+                            <button onclick="addTransaction('${name}', 'cashOut', parseFloat(prompt('Cashout:')))">Cash Out</button>
+                        </div>
+                        <div class="p-buyin">$${totalBuyIn}</div>
+                        <div class="p-cashout">${p.hasCashedOut ? '$'+p.cashOut : '-'}</div>
+                        <div class="p-net" style="color:${net>=0?'green':'red'}">${net !== null ? (net>=0?'+':'')+net : '-'}</div>
+                    </div>`;
+            }
+            
+            document.getElementById('totalInDisplay').innerText = totalIn;
+            document.getElementById('totalOutDisplay').innerText = totalOut;
+            document.getElementById('outWrapper').classList.toggle('hidden', totalOut === 0);
+            
+            const diff = totalIn - totalOut;
+            document.getElementById('status').innerText = (diff === 0 && totalIn > 0) ? "✅ Balanced" : `Remaining: $${diff}`;
+            document.getElementById('minFlowBtn').classList.toggle('hidden', diff !== 0 || totalIn === 0);
+
+            const lDiv = document.getElementById('ledgerList');
+            lDiv.innerHTML = ledger.map((item, i) => `
+                <div class="ledger-item">
+                    <span>${item.time} - ${item.name} <span class="${item.type==='buyIn'?'bold-blue':'bold-black'}">${item.type}</span>: $${item.amount}</span>
+                    <button class="edit-btn" onclick="editLedger(${i})">Edit</button>
+                </div>`).join('');
+        }
+
+function resetAll() { 
+    if(confirm("Clear all data?")) { 
+        players = {}; 
+        ledger = []; 
+        localStorage.clear(); 
+        
+        // ADD THESE TWO LINES:
+        document.getElementById('flowResult').style.display = 'none';
+        document.getElementById('flowResult').innerHTML = '';
+        
+        render(); 
+    } 
+}
+        render();
+    </script>
+    
+    <footer style="text-align: center; margin-top: 10px; padding-bottom: 1px; color: gray;">
+	<small><i>♠️♥️ Built by 
+		<a href="mailto:ccchuah@yahoo.com" style="color: inherit;">CCC</a> 
+		| 2026 Summer ♣️♦️
+	</i></small>
+</footer>
+</body>
+</html>
