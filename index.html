@@ -31,6 +31,33 @@
         
         .bold-blue { color: #0056b3; font-weight: bold; }
         .bold-black { color: #000; font-weight: bold; }
+        
+        @media (max-width: 600px) {
+    /* 1. Reduce padding on the body for mobile */
+    body { padding: 5px; }
+
+    /* 2. Tighten the player row layout */
+    .player-row { 
+        grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr; 
+        font-size: 0.75rem; 
+        padding: 6px 0;
+    }
+
+    /* 3. Make the Name column text wrap nicely */
+    .p-name { line-height: 1.2; }
+
+    /* 4. Shrink the buttons so they don't break the layout */
+    button { 
+        padding: 4px 2px; 
+        font-size: 0.7rem; 
+    }
+
+    /* 5. Make the "Add Player" section more compact */
+    .card { padding: 8px; }
+    
+    /* 6. Ensure the Ledger text is small enough to fit */
+    #ledgerList { font-size: 0.7rem; }
+}
     </style>
 </head>
 <body>
