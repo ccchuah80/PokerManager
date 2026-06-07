@@ -9,13 +9,14 @@
 			position: fixed;
 			top: 0;
 			max-width: 600px;
-			width: 96%;
+			width: 98%; /* Changed to 100% for better alignment */
 			background-color: #003366; 
-			padding: 10px 0;
+			padding: 0px 0;
 			z-index: 1000;
 			text-align: center;
-			box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Adds a nice separation effect */
+			box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 		}
+
 		body { 
 			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 			padding: 10px ; 
@@ -32,7 +33,7 @@
 			width: 100%;
 			max-width: 600px;
 			margin: 0 auto;
-			padding-top: 70px; /* IMPORTANT: Matches the height of your header + padding */
+			padding-top: 130px; /* IMPORTANT: Matches the height of your header + padding */
 			box-sizing: border-box;
 		}
 		.card { 
@@ -110,14 +111,17 @@
 
 <body>
 	<header class="fixed-header">
-		<h1 style="background-color: #3ec;padding: 10px;border: 3px solid #c0c; border-radius: 10px; margin: 0; text-shadow: 2px 2px 6px #eee;font-size: 1.5rem;color: green;">♠️♥️ Poker Tracker ♣️♦️</h1>
-	</header>
-	<div class="container">
-		<div class="card" style="text-align:center;font-size: 1.2rem; font-weight:bold;">Total Stack: $<span id="totalInDisplay">0</span>  
+		<h1 style="...">♠️♥️ Poker Tracker ♣️♦️</h1>
+		<div class="card" style="text-align:center;font-size: 1.2rem; font-weight:bold;">
+			Total Stack: $<span id="totalInDisplay">0</span>  
 			<span id="outWrapper" class="hidden">| Cash-out: $<span id="totalOutDisplay">0</span></span>
-			<div id="status" class="hidden" style="margin-top: 5px; color: #aaa;"></div>
-			<button id="minFlowBtn" class="hidden" onclick="minimizeFlow()" style="background:#28a745; color:white; margin-top:10px; border:none; padding:10px; cursor:pointer;">Settlement</button>
+			<div id="status" class="hidden" style="margin-top: 5px; font-size: 1rem; color: #aaa;"></div>
 		</div>
+	</header>
+
+	<div class="container">
+
+		<button id="minFlowBtn" class="hidden" onclick="minimizeFlow()" style="width:100%; background:#28a745; font-size:1.2rem; color:white; margin-top:10px; border:1; padding:10px; cursor:pointer;">Settlement?</button>
 		<div class="card" id="flowResult" style="display:none; background:#28a745; color:white;font-size:1.2rem;"></div>
 		<button onclick="document.getElementById('addPlayerSection').classList.toggle('hidden')" style="width: 100%; padding: 10px;">Toggle Add Player</button>
 		<div id="addPlayerSection" class="card hidden">
