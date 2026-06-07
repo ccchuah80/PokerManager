@@ -1,56 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Poker Settlement Manager by CCC</title>
-    <style>
+	<title>Poker Settlement Manager by CCC</title>
+	<style>
+		.fixed-header {
+			position: fixed;
+			top: 0;
+			max-width: 600px;
+			width: 96%;
+			background-color: #003366; 
+			padding: 10px 0;
+			z-index: 1000;
+			text-align: center;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Adds a nice separation effect */
+		}
+
 		body { 
 			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-			margin: 0; 
-			padding: 10px; 
-			width: 100%;
+			padding: 10px ; 
 			box-sizing: border-box; /* Ensures padding doesn't add to width */
 			background-color: #003366;
 			background-image: linear-gradient(135deg, #004080 25%, transparent 25%, transparent 75%, #004080 75%, #004080), 
 							  linear-gradient(45deg, #004080 25%, transparent 25%, transparent 75%, #004080 75%, #004080);
 			background-size: 50px 50px;
 			color: white;
+			display: flex;
+			justify-content: center;
 		}
-		
+		.container {
+			width: 100%;
+			max-width: 600px;
+			margin: 0 auto;
+			padding-top: 70px; /* IMPORTANT: Matches the height of your header + padding */
+			box-sizing: border-box;
+		}
 		.card { 
 			background: rgba(255, 255, 250, 0.95); 
 			color: #333; 
 			border-radius: 10px; 
-			padding: 10px; 
+			padding: 8px; 
 			margin-bottom: 10px; 
 			width: 100%;
 			box-sizing: border-box; /* Crucial for mobile sizing */
-			box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+			box-shadow: 0 6px 6px rgba(0,0,0,0.2); 
 		}
-        .hidden { display: none; }
-        .player-row { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr; align-items: center; border-bottom: 1px solid #666; padding: 0.8rem 0; font-size: 0.9rem; }
-        .p-name { font-weight: bold; }
-        .p-buyin, .p-cashout, .p-net { text-align: center; }
-        
-        input { width: 100%; padding: 0.5rem; margin: 0.3rem 0; box-sizing: border-box; }
-        button { 
-		  padding: 1rem; 
-		  font-size: 0.9rem; 
-		  border: 2px solid #ccc; /* Added style and color */
-		  border-radius: 10px; 
-		  cursor: pointer; 
-		  margin: 2px;
-		  background: #06c;
-		  font-family: sans-serif;
-		  color: white;
-		  transition: background-color 0.2s ease;
+		.hidden { display: none; }
+		.player-row { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr; align-items: center; border-bottom: 1px solid #666; padding: 0.8rem 0; font-size: 0.9rem; }
+		.p-name { font-weight: bold; }
+		.p-buyin, .p-cashout, .p-net { text-align: center; }
+		
+		input { width: 100%; padding: 0.5rem; margin: 0.3rem 0; box-sizing: border-box; }
+		button { 
+			padding: 1rem; 
+			font-size: 0.9rem; 
+			font-weight: bold;
+			border: 2px solid #ccc; /* Added style and color */
+			border-radius: 10px; 
+			cursor: pointer; 
+			margin: 2px;
+			background: #06c;
+			font-family: sans-serif;
+			color: white;
+			transition: background-color 0.2s ease;
 		}
 		button:hover   { background-color: #0052a3; }
-        .btn-main { background: #28a745; color: white; width: 100%; border-radius: 10px; padding: 0.6rem; }
-        .btn-main:hover   { background-color: #218838; }
-        
-		#ledgerList { height: 250px; overflow-y: auto; border: 2px solid #ddd; padding: 0.5rem; background: white; font-size: 0.8rem; color: #333; }
+		.btn-main { background: #28a745; color: white; width: 100%; border-radius: 10px; padding: 0.6rem; }
+		.btn-main:hover   { background-color: #218838; }
+		
+		#ledgerList { height: 350px; overflow-y: auto; border: 2px solid #ddd; padding: 0.5rem; background: white; font-size: 0.8rem; color: #333; }
 		.ledger-item { 
 			display: flex; 
 			justify-content: space-between; 
@@ -61,71 +80,70 @@
 		}
 		.ledger-item:active { background-color: #f0f0f0; } /* Visual feedback on mobile tap */
 		.edit-btn { display: none; } /* We don't need the button element anymore */
-        .ledger-item:hover .edit-btn { visibility: visible; }
-        
-        .bold-blue { color: #0056b3; font-weight: bold; }
-        .bold-black { color: #000; font-weight: bold; }
-        
+		.ledger-item:hover .edit-btn { visibility: visible; }
+		.bold-blue { color: #0056b3; font-weight: bold; }
+		.bold-black { color: #000; font-weight: bold; }
+		
 		@media (max-width: 640px) {
 			/* Force body to take full width and prevent scroll */
-			body { padding: 8px; }
+			body { padding: 5px; }
 		
 			/* Force the player row to use minimal spacing */
 			.player-row { 
 				grid-template-columns: 1.8fr 0.8fr 0.8fr 0.7fr; /* Adjusted for name space */
 				font-size: 1rem; 
-				padding: 12px 2px;
-			}
-		
+				padding: 10px 2px;
+			}		
 			/* Prevent long names from breaking the layout */
 			.p-name { 
 				word-wrap: break-word; 
 				overflow-wrap: break-word; 
 				hyphens: auto; 
-			}
-		
+			}		
 			/* Make buttons touch-friendly but compact */
 			button { 
 				padding: 8px 4px; 
 				font-size: 1rem; 
 			}
 		}
-    </style>
+	</style>
 </head>
+
 <body>
-
-    <div class="card" style="text-align:center;font-size: 1.2rem; font-weight:bold;">
-        Chips In Play: $<span id="totalInDisplay">0</span>  
-        <span id="outWrapper" class="hidden">| Total CashOut: $<span id="totalOutDisplay">0</span></span>
+<header class="fixed-header">
+	<h1 style="background-color: #3ec;padding: 10px;border: 3px solid #c0c; border-radius: 10px; margin: 0; text-shadow: 2px 2px 6px #eee;font-size: 1.5rem;color: green;">♠️♥️ Poker Tracker ♣️♦️</h1>
+</header>
+<div class="container">
+	<div class="card" style="text-align:center;font-size: 1.2rem; font-weight:bold;">Chips In Play: $<span id="totalInDisplay">0</span>  
+		<span id="outWrapper" class="hidden">| Total CashOut: $<span id="totalOutDisplay">0</span></span>
 		<div id="status" class="hidden" style="margin-top: 5px; color: #aaa;"></div>
-                <button id="minFlowBtn" class="hidden" onclick="minimizeFlow()" style="background:#28a745; color:white; margin-top:10px; border:none; padding:10px; cursor:pointer;">Settlement</button>
-    </div>
+		<button id="minFlowBtn" class="hidden" onclick="minimizeFlow()" style="background:#28a745; color:white; margin-top:10px; border:none; padding:10px; cursor:pointer;">Settlement</button>
+	</div>
 
-    <div class="card" id="flowResult" style="display:none; background:#28a745; color:white;font-size:1.2rem;"></div>
-    <button onclick="document.getElementById('addPlayerSection').classList.toggle('hidden')" style="width: 100%; padding: 10px;">Toggle Add Player</button>
-    <div id="addPlayerSection" class="card hidden">
-        <input type="text" style="font-size: 1rem" id="pName" placeholder="Player Name">
-        <input type="number" style="font-size: 1rem" id="initialBuyIn" value="200">
-        <button class="btn-main" onclick="addPlayer()">Add Player</button>
-    </div>
+	<div class="card" id="flowResult" style="display:none; background:#28a745; color:white;font-size:1.2rem;"></div>
+	<button onclick="document.getElementById('addPlayerSection').classList.toggle('hidden')" style="width: 100%; padding: 10px;">Toggle Add Player</button>
+	<div id="addPlayerSection" class="card hidden">
+		<input type="text" style="font-size: 1rem" id="pName" placeholder="Player Name">
+		<input type="number" style="font-size: 1rem" id="initialBuyIn" value="200">
+		<button class="btn-main" onclick="addPlayer()">Add Player</button>
+	</div>
+
+	<div class="card" style="margin-top: 0.5rem;">
+		<div class="player-row" style="font-weight:bold; border-bottom: 2px solid #333;">
+			<div>NAME</div><div style="text-align:center">💰In</div><div style="text-align:center">💰Out</div><div style="text-align:center">Net</div>
+		</div>
+		<div id="playerList"></div>
+	</div>
+	<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+		<h3 style="margin: 1;">Transaction Ledger</h3>		
+		<button style="padding: 12px 18px; background: #dc3545; color: white; border: none; border-radius: 5px;" onclick="resetAll()">Clear All Data</button>
+	</div>
+	<div id="ledgerList"></div>
 
 
-    <div class="card" style="margin-top: 0.5rem;">
-        <div class="player-row" style="font-weight:bold; border-bottom: 2px solid #333;">
-            <div>NAME</div><div style="text-align:center">💰In</div><div style="text-align:center">💰Out</div><div style="text-align:center">Net</div>
-        </div>
-        <div id="playerList"></div>
-    </div>
-
-
-    <h3>Transaction Ledger</h3>
-    <div id="ledgerList"></div>
-
-    <button style="width: 100%; margin-top: 0.5rem; padding: 10px; font-weight: bold; background: #dc3545; color: white;" onclick="resetAll()">Clear All Data</button>
-
-    <script>
-        let players = JSON.parse(localStorage.getItem('pokerPlayers')) || {};
-        let ledger = JSON.parse(localStorage.getItem('pokerLedger')) || [];
+	<script>
+		let players = JSON.parse(localStorage.getItem('pokerPlayers')) || {};
+		let ledger = JSON.parse(localStorage.getItem('pokerLedger')) || [];
 
 		function addPlayer() {
 			const name = document.getElementById('pName').value.trim();
@@ -145,60 +163,61 @@
 			document.getElementById('pName').value = '';
 		}
 
-        function addTransaction(name, type, amount) {
-            if (isNaN(amount)) return;
-            const gIn = Object.values(players).reduce((sum, p) => sum + p.buyIns.reduce((s, a) => s+a, 0), 0) + (type === 'buyIn' ? amount : 0);
-            const gOut = Object.values(players).reduce((sum, p) => sum + p.cashOut, 0) + (type === 'cashOut' ? amount : 0);
-            if (type === 'cashOut' && gOut > gIn) { alert("Table Error: Out exceeds In!"); return; }
-            
-            if (type === 'cashOut') {
+		function addTransaction(name, type, amount) {
+			if (isNaN(amount)) return;
+			const gIn = Object.values(players).reduce((sum, p) => sum + p.buyIns.reduce((s, a) => s+a, 0), 0) + (type === 'buyIn' ? amount : 0);
+			const gOut = Object.values(players).reduce((sum, p) => sum + p.cashOut, 0) + (type === 'cashOut' ? amount : 0);
+			if (type === 'cashOut' && gOut > gIn) { alert("Table Error: Out exceeds In!"); return; }
+			
+			if (type === 'cashOut') {
 				players[name].cashOut = amount;
 				players[name].hasCashedOut = true;
 			}            else players[name].buyIns.push(amount);
 
-            ledger.push({ name, type, amount, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
-            render();
-        }
+			ledger.push({ name, type, amount, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+			render();
+		}
 
-        function editLedger(index) {
-            const entry = ledger[index];
-            const newAmount = parseFloat(prompt(`Update ${entry.name} (${entry.type}):`, entry.amount));
-            if (isNaN(newAmount)) return;
+		function editLedger(index) {
+			const entry = ledger[index];
+			const newAmount = parseFloat(prompt(`Update ${entry.name} (${entry.type}):`, entry.amount));
+			if (isNaN(newAmount)) return;
 
-            // Logic to reverse and re-apply
-            if (entry.type === 'buyIn') {
-                const bIndex = players[entry.name].buyIns.indexOf(entry.amount);
-                players[entry.name].buyIns[bIndex] = newAmount;
-            } else {
-                players[entry.name].cashOut = newAmount;
-            }
-            entry.amount = newAmount;
-            render();
-        }
+			// Logic to reverse and re-apply
+			if (entry.type === 'buyIn') {
+				const bIndex = players[entry.name].buyIns.indexOf(entry.amount);
+				players[entry.name].buyIns[bIndex] = newAmount;
+			} else {
+				players[entry.name].cashOut = newAmount;
+			}
+			entry.amount = newAmount;
+			render();
+		}
 
-        function minimizeFlow() {
-            let balances = [];
-            for (let name in players) {
-                let net = players[name].cashOut - players[name].buyIns.reduce((a,b)=>a+b, 0);
-                if (net !== 0) balances.push({ name, net });
-            }
-            let debtors = balances.filter(b => b.net < 0).sort((a,b) => a.net - b.net);
-            let creditors = balances.filter(b => b.net > 0).sort((a,b) => b.net - a.net);
-            
-            let res = "<strong>Settlement Plan:</strong><br>";
-            while(debtors.length > 0 && creditors.length > 0) {
-                let d = debtors[0], c = creditors[0];
-                let amt = Math.min(-d.net, c.net);
-                res += `${d.name} pays ${c.name}: $${amt.toFixed(0)}<br>`;
-                d.net += amt; c.net -= amt;
-                if (Math.abs(d.net) < 0.1) debtors.shift();
-                if (Math.abs(c.net) < 0.1) creditors.shift();
-            }
-            let div = document.getElementById('flowResult');
-            div.innerHTML = res;
-            div.style.display = 'block';
-        }
-        function promptAndAdd(name, type) {
+		function minimizeFlow() {
+			let balances = [];
+			for (let name in players) {
+				let net = players[name].cashOut - players[name].buyIns.reduce((a,b)=>a+b, 0);
+				if (net !== 0) balances.push({ name, net });
+			}
+			let debtors = balances.filter(b => b.net < 0).sort((a,b) => a.net - b.net);
+			let creditors = balances.filter(b => b.net > 0).sort((a,b) => b.net - a.net);
+			
+			let res = "<strong>Settlement Plan:</strong><br>";
+			while(debtors.length > 0 && creditors.length > 0) {
+				let d = debtors[0], c = creditors[0];
+				let amt = Math.min(-d.net, c.net);
+				res += `${d.name} pays ${c.name}: $${amt.toFixed(0)}<br>`;
+				d.net += amt; c.net -= amt;
+				if (Math.abs(d.net) < 0.1) debtors.shift();
+				if (Math.abs(c.net) < 0.1) creditors.shift();
+			}
+			let div = document.getElementById('flowResult');
+			div.innerHTML = res;
+			div.style.display = 'block';
+		}
+		
+		function promptAndAdd(name, type) {
 			let input;
 			let valid = false;
 		
@@ -218,40 +237,41 @@
 				}
 			}
 		}
-        function render() {
-            localStorage.setItem('pokerPlayers', JSON.stringify(players));
-            localStorage.setItem('pokerLedger', JSON.stringify(ledger));
-
-            let totalIn = 0, totalOut = 0;
-            const container = document.getElementById('playerList');
-            container.innerHTML = '';
-            
-            for (const name in players) {
-                const p = players[name];
-                const totalBuyIn = p.buyIns.reduce((s, a) => s + a, 0);
-                totalIn += totalBuyIn;
-                if (p.hasCashedOut) totalOut += p.cashOut;
-                let net = p.hasCashedOut ? (p.cashOut - totalBuyIn) : null;                
-                container.innerHTML += `
-                    <div class="player-row">
-                        <div class="p-name">${name}<br>
+		
+		function render() {
+			localStorage.setItem('pokerPlayers', JSON.stringify(players));
+			localStorage.setItem('pokerLedger', JSON.stringify(ledger));
+			let totalIn = 0, totalOut = 0;
+			
+			const container = document.getElementById('playerList');
+			container.innerHTML = '';
+			
+			for (const name in players) {
+				const p = players[name];
+				const totalBuyIn = p.buyIns.reduce((s, a) => s + a, 0);
+				totalIn += totalBuyIn;
+				if (p.hasCashedOut) totalOut += p.cashOut;
+				let net = p.hasCashedOut ? (p.cashOut - totalBuyIn) : null;                
+				container.innerHTML += `
+					<div class="player-row">
+						<div class="p-name">${name}<br>
 							<button onclick="promptAndAdd('${name}', 'buyIn')">+Re-buy</button>
 							<button onclick="promptAndAdd('${name}', 'cashOut')">Cash Out</button>
-                        </div>
-                        <div class="p-buyin">$${totalBuyIn}</div>
-                        <div class="p-cashout">${p.hasCashedOut ? '$'+p.cashOut : '-'}</div>
-                        <div class="p-net" style="color:${net>=0?'green':'red'}">${net !== null ? (net>=0?'+':'')+net : '-'}</div>
-                    </div>`;
-            }
-            
-            document.getElementById('totalInDisplay').innerText = totalIn;
-            document.getElementById('totalOutDisplay').innerText = totalOut;
-            document.getElementById('outWrapper').classList.toggle('hidden', totalOut === 0);
-            document.getElementById('status').classList.toggle('hidden', totalOut === 0);
-            
-            const diff = totalIn - totalOut;
-            document.getElementById('status').innerText = (diff === 0 && totalIn > 0) ? "✅ Balanced" : `Remaining: $${diff}`;
-            document.getElementById('minFlowBtn').classList.toggle('hidden', diff !== 0 || totalIn === 0);
+						</div>
+						<div class="p-buyin">$${totalBuyIn}</div>
+						<div class="p-cashout">${p.hasCashedOut ? '$'+p.cashOut : '-'}</div>
+						<div class="p-net" style="color:${net>=0?'green':'red'}">${net !== null ? (net>=0?'+':'')+net : '-'}</div>
+					</div>`;
+			}
+			
+			document.getElementById('totalInDisplay').innerText = totalIn;
+			document.getElementById('totalOutDisplay').innerText = totalOut;
+			document.getElementById('outWrapper').classList.toggle('hidden', totalOut === 0);
+			document.getElementById('status').classList.toggle('hidden', totalOut === 0);
+			
+			const diff = totalIn - totalOut;
+			document.getElementById('status').innerText = (diff === 0 && totalIn > 0) ? "✅ Balanced" : `Remaining: $${diff}`;
+			document.getElementById('minFlowBtn').classList.toggle('hidden', diff !== 0 || totalIn === 0);
 
 			const lDiv = document.getElementById('ledgerList');
 			lDiv.innerHTML = ledger.map((item, i) => `
@@ -261,7 +281,7 @@
 					</span>
 					<small style="color:#888;">(Tap to edit)</small>
 				</div>`).join('');
-					}
+		}
 
 		function resetAll() { 
 			if(confirm("Clear all data?")) { 
@@ -276,14 +296,16 @@
 				render(); 
 			} 
 		}
-				render();
-    </script>
-    
-    <footer style="text-align: center; margin-top: 10px; padding-bottom: 1px; color: gray;">
-	<small><i>♠️♥️ Built by 
-		<a href="mailto:ccchuah@yahoo.com" style="color: inherit;">CCC</a> 
-		| 2026 Summer ♣️♦️
-	</i></small>
-</footer>
+				
+		render();
+	</script>
+
+	<footer style="text-align: center; margin-top: 10px; padding-bottom: 1px; color: gray;">
+		<small><i>♠️♥️ Built by 
+			<a href="mailto:ccchuah@yahoo.com" style="color: inherit;">CCC</a> 
+			| 2026 Summer ♣️♦️
+		</i></small>
+	</footer>
+</div>
 </body>
 </html>
