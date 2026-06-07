@@ -114,7 +114,7 @@
 	<h1 style="background-color: #3ec;padding: 10px;border: 3px solid #c0c; border-radius: 10px; margin: 0; text-shadow: 2px 2px 6px #eee;font-size: 1.5rem;color: green;">♠️♥️ Poker Tracker ♣️♦️</h1>
 </header>
 <div class="container">
-	<div class="card" style="text-align:center;font-size: 1.2rem; font-weight:bold;">Chips In Play: $<span id="totalInDisplay">0</span>  
+	<div class="card" style="text-align:center;font-size: 1.2rem; font-weight:bold;">Tota Stack: $<span id="totalInDisplay">0</span>  
 		<span id="outWrapper" class="hidden">| Total CashOut: $<span id="totalOutDisplay">0</span></span>
 		<div id="status" class="hidden" style="margin-top: 5px; color: #aaa;"></div>
 		<button id="minFlowBtn" class="hidden" onclick="minimizeFlow()" style="background:#28a745; color:white; margin-top:10px; border:none; padding:10px; cursor:pointer;">Settlement</button>
@@ -167,7 +167,7 @@
 			if (isNaN(amount)) return;
 			const gIn = Object.values(players).reduce((sum, p) => sum + p.buyIns.reduce((s, a) => s+a, 0), 0) + (type === 'buyIn' ? amount : 0);
 			const gOut = Object.values(players).reduce((sum, p) => sum + p.cashOut, 0) + (type === 'cashOut' ? amount : 0);
-			if (type === 'cashOut' && gOut > gIn) { alert("Table Error: Out exceeds In!"); return; }
+			if (type === 'cashOut' && gOut > gIn) { alert("Error: total Cash Out exceeds Buy In!"); return; }
 			
 			if (type === 'cashOut') {
 				players[name].cashOut = amount;
@@ -270,7 +270,7 @@
 			document.getElementById('status').classList.toggle('hidden', totalOut === 0);
 			
 			const diff = totalIn - totalOut;
-			document.getElementById('status').innerText = (diff === 0 && totalIn > 0) ? "✅ Balanced" : `Remaining: $${diff}`;
+			document.getElementById('status').innerText = (diff === 0 && totalIn > 0) ? "✅ Balanced" : `(Remaining: $${diff})`;
 			document.getElementById('minFlowBtn').classList.toggle('hidden', diff !== 0 || totalIn === 0);
 
 			const lDiv = document.getElementById('ledgerList');
