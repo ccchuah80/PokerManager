@@ -84,8 +84,35 @@
 		.ledger-item:hover .edit-btn { visibility: visible; }
 		.bold-blue { color: #0056b3; font-weight: bold; }
 		.bold-black { color: #000; font-weight: bold; }
-		
-		@media (max-width: 640px) {
+		    .controls-grid {
+        display: grid;
+        /* Creates 2 equal-width columns. Change to 'repeat(4, 1fr)' for 1 row */
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .controls-grid button {
+        width: 100%; /* Ensures button fills the grid cell */
+        padding: 10px;
+        font-size: 0.9rem;
+        border-radius: 5px;
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+    .input-row {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+    .input-row input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    		@media (max-width: 640px) {
 			/* Force body to take full width and prevent scroll */
 			body { padding: 5px; }
 		
@@ -116,16 +143,21 @@
 
 	<div class="container">
 
-		<div class="card" style="margin-bottom: 10px;">
-			
-	<input type="text" id="gameIdInput" placeholder="Enter Game ID">
-	<button onclick="handleLoadGame()">Load Game</button>
-    <button onclick="createNewGame()" style="background:#28a745;">New Game</button>
-    <button onclick="shareGame()" style="background:#6c757d;">Share Game</button>
-    <button onclick="resetAll()" style="background: #dc3545; color: white;">Clear All Data</button>
-    <p>Active Game ID: <strong id="displayGameId" style="color: #007bff;">None</strong></p>
-</div>
-		<button id="minFlowBtn" class="hidden" onclick="minimizeFlow()" style="width:100%; background:#28a745; font-size:1.2rem; color:white; margin-top:10px; border:1; padding:10px; cursor:pointer;">Settlement?</button>
+		<div class="card" style="padding: 15px;">
+    <div class="input-row">
+        <button onclick="handleLoadGame()" style="background:#007bff;">Load Game</button>
+        <input type="text" id="gameIdInput" placeholder="Enter Game ID">
+        
+        <p>Active ID: <strong id="displayGameId" style="color: #007bff;">None</strong></p>
+    </div>
+
+    <div class="controls-grid">
+        <button onclick="createNewGame()" style="background:#28a745;">New Game</button>
+        <button onclick="shareGame()" style="background:#6c757d;">Share Game</button>
+        <button onclick="resetAll()" style="background: #dc3545; width: 100%; padding: 10px; border:none; border-radius:5px; color:white;">Clear All Data</button>
+        </div>
+    </div>
+	<button id="minFlowBtn" class="hidden" onclick="minimizeFlow()" style="width:100%; background:#28a745; font-size:1.2rem; color:white; margin-top:10px; border:1; padding:10px; cursor:pointer;">Settlement?</button>
 		<div class="card" id="flowResult" style="display:none; background:#28a745; color:white;font-size:1.2rem;"></div>
 		<button onclick="document.getElementById('addPlayerSection').classList.toggle('hidden')" style="width: 100%; padding: 10px;">Toggle Add Player</button>
 		<div id="addPlayerSection" class="card hidden">
@@ -439,12 +471,19 @@
 			}
 			
 			function shareGame() {
-				const url = window.location.origin + window.location.pathname + "?gameid=" + currentGameId;
+				// The base URL for your view-only page
+				const baseUrl = "https://ccchuah80.github.io/PokerManager/trackerviewer.html";
+				const url = `${baseUrl}?gameid=${currentGameId}`;
+				
 				if (navigator.share) {
-					navigator.share({ title: 'Poker Tracker', url: url });
+					navigator.share({ 
+						title: 'Poker Tracker - View', 
+						text: 'View the live poker progress here:',
+						url: url 
+					});
 				} else {
 					navigator.clipboard.writeText(url);
-					alert("Link copied to clipboard!");
+					alert("Link copied to clipboard: " + url);
 				}
 			}
 					
