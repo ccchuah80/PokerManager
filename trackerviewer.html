@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<title>Poker Tracker - Viewer</title>
+	<style>	
+		.fixed-header {
+			position: fixed;
+			top: 0;
+			max-width: 600px;
+			width: 96%; /* Changed to 100% for better alignment */
+			background-color: #003366; 
+			padding: 0px 0;
+			z-index: 1000;
+			text-align: center;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+		}
+		
+		body {
+			font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+			padding: 2px ; 
+			box-sizing: border-box; /* Ensures padding doesn't add to width */
+			background-color: #003366;
+			background-image: linear-gradient(135deg, #004080 25%, transparent 25%, transparent 75%, #004080 75%, #004080), 
+							  linear-gradient(45deg, #004080 25%, transparent 25%, transparent 75%, #004080 75%, #004080);
+			background-size: 50px 50px;
+			color: white;
+			display: flex;
+			justify-content: center;
+		}
+		
+		.container { width: 100%; max-width: 600px; padding-top: 140px; }
+		.card { 
+			background: rgba(255, 255, 250, 0.95); 
+			color: #333; border-radius: 10px; padding: 15px; 
+			margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+			}
+		.player-row { 
+			display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; 
+			align-items: center; border-bottom: 1px solid #ccc; padding: 10px 0; 
+			font-size: 1.1rem; 
+			}
+		.ledger-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+		#ledgerList { 
+			height: 350px; overflow-y: auto; border: 2px solid #ddd; 
+			padding: 0.5rem; background: white; font-size: 0.8rem; color: #333; 
+			}
+		input { width: 30%; padding: 0.5rem; }
+		button { 
+			padding: 8px 15px; background: #06c; 
+			color: white; border: none; border-radius: 5px; 
+			cursor: pointer; 
+			}
+	</style>
+</head>
+
+<body>
+	<header class="fixed-header">
+		<h1 style="...">♠️♥️ Poker Tracker ♣️♦️</h1>
+		<div class="card" style="text-align:center;font-size: 1.2rem; font-weight:bold;">
+			Total Stack: $<span id="totalInDisplay">0</span>  
+		</div>
+	</header>
+	<div class="container">
+		<div class="card" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+			<input type="text" id="gameIdInput" placeholder="Enter ID" style="flex: 1; min-width: 35px;">
+			<button onclick="handleLoadGame()">Load Game</button>
+			<label style="font-size:0.8rem; white-space: nowrap;">
+				Active: <strong id="displayGameId">None</strong>
+			</label>
+		</div>
+
+		<div class="card">
+
+			<div class="player-row" style="font-weight:bold;">
+				<div>Player's Name</div><div>💰In</div><div>💰Out</div><div>Net</div>
+			</div>
+			<div id="playerList"></div>
+		</div>
+
+		<h3>Transaction Ledger</h3>
+		<div class="card" id="ledgerList"></div>
+		<footer style="text-align: center; margin-top: 10px; padding-bottom: 1px; color: gray;">
+			<small><i>♠️♥️ Built by 
+				<a href="mailto:ccchuah@yahoo.com" style="color: inherit;">CCC</a> 
+				| 2026 Summer ♣️♦️
+			</i></small>
+		</footer>
+		
+	</div>
+
+	<script>
+		const supabaseClient = supabase.createClient(
+			'https://qukzflxlacbiupgurohs.supabase.co', 
+			'sb_publishable_eswBLvN5XVje_jZk5ZFCnw_unnlI5wA'
+		);
+
+		let players = {};
+		let ledger = [];
+		let currentGameId = new URLSearchParams(window.location.search).get('gameid') || "";
+
+		async function loadGame() {
+			if (!currentGameId) return;
+			
+			const { data, error } = await supabaseClient
+				.from('poker_games')
+				.select('*')
+				.eq('game_id', currentGameId)
+				.single();
+					
+			if (data) {
+				players = data.players_data;
+				ledger = data.ledger_data;
+				document.getElementById('displayGameId').innerText = currentGameId;
+				render();
+			} else {
+				alert("Game ID not found.");
+			}
+		}
+
+		function handleLoadGame() {
+			const id = document.getElementById('gameIdInput').value.trim();
+			if (!id) return;
+			currentGameId = id;
+			window.history.pushState({}, '', `?gameid=${currentGameId}`);
+			loadGame();
+		}
+
+		function render() {
+			let totalIn = 0, totalOut = 0;
+			const container = document.getElementById('playerList');
+			container.innerHTML = '';
+			
+			for (const name in players) {
+				const p = players[name];
+				const totalBuyIn = p.buyIns.reduce((s, a) => s + a, 0);
+				const totalCashOut = p.cashOuts.reduce((s, a) => s + a, 0);
+				
+				totalIn += totalBuyIn;
+				if (p.hasCashedOut) totalOut += totalCashOut;
+				let net = p.hasCashedOut ? (totalCashOut - totalBuyIn) : null;
+				
+				container.innerHTML += `
+					<div class="player-row">
+						<div>${name}</div>
+						<div>$${totalBuyIn}</div>
+						<div>${p.hasCashedOut ? '$'+totalCashOut : '-'}</div>
+						<div style="color:${net>=0?'green':'red'}">${net !== null ? (net>=0?'+':'')+net : '-'}</div>
+					</div>`;
+			}
+			
+			document.getElementById('totalInDisplay').innerText = totalIn;
+
+			const lDiv = document.getElementById('ledgerList');
+			lDiv.innerHTML = ledger.map(item => `
+				<div class="ledger-item">
+					${item.time} - ${item.name} <b>${item.type}</b>: $${item.amount}
+				</div>`).join('');
+		}
+
+		if (currentGameId) loadGame();
+	</script>
+</body>
+</html>
